@@ -1,26 +1,208 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulário Helpers</title>
   <link rel="stylesheet" href="style.css">
-  <title>site</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
-
 <body>
- <header>
-   <h1 class="textoh1">
-     <strong>
-       OLÁ, SEJA BEM VINDO AS MINHAS<br> METAS DE 2026 
-     </strong>
-   </h1>
- </header>
- 
- <main></main>
- 
- <footer></footer>
+
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <!-- Toast de notificação -->
+  <div class="toast" id="toast"></div>
+
+  <div class="container">
+
+    <header>
+      <div class="badge">RECRUTAMENTO ABERTO</div>
+      <h1>Formulário<br><span>Helpers</span></h1>
+      <p class="subtitle">Olá jogador, seja bem-vindo. Leia os requisitos antes de prosseguir.</p>
+
+      <div class="requisitos">
+        <h2>⚠️ Requisitos Mínimos</h2>
+        <ul>
+          <li><span class="num">01</span> Ter no mínimo 15 anos</li>
+          <li><span class="num">02</span> Ter responsabilidade</li>
+          <li><span class="num">03</span> Ter experiência no Discord</li>
+          <li><span class="num">04</span> Ter microfone sempre à disposição</li>
+          <li><span class="num">05</span> Ter no mínimo 3 meses jogado</li>
+        </ul>
+      </div>
+    </header>
+
+    <main>
+      <div class="form-section-label">— Informações Pessoais —</div>
+
+      <div class="field">
+        <h3>👤 Como você se chama?</h3>
+        <input id="nome" type="text" placeholder="Digite seu nome aqui!">
+      </div>
+
+      <div class="field">
+        <h3>🎂 Quantos anos você tem?</h3>
+        <input id="idade" type="number" placeholder="Digite sua idade aqui!">
+      </div>
+
+      <div class="field">
+        <h3>🌍 De qual país/estado você é?</h3>
+        <input id="estado" type="text" placeholder="Ex: Brasil - São Paulo">
+      </div>
+
+      <div class="field">
+        <h3>📱 Qual é o seu Discord?</h3>
+        <input id="discord" type="text" placeholder="Ex: jogador#1234">
+      </div>
+
+      <div class="form-section-label">— Sobre sua Experiência —</div>
+
+      <div class="field">
+        <h3>🎮 Há quanto tempo você joga no servidor?</h3>
+        <input id="tempo_servidor" type="text" placeholder="Ex: 4 meses, 1 ano...">
+      </div>
+
+      <div class="field">
+        <h3>⏰ Quantas horas por dia você consegue ficar online?</h3>
+        <input id="horas" type="text" placeholder="Ex: 3 horas por dia">
+      </div>
+
+      <div class="field">
+        <h3>💬 Você tem experiência como Staff ou Helper em outros servidores?</h3>
+        <input id="experiencia" type="text" placeholder="Se sim, conte um pouco sobre essa experiência!">
+      </div>
+
+      <div class="field">
+        <h3>🎙️ Você possui microfone disponível?</h3>
+        <select id="microfone">
+          <option value="">Selecione...</option>
+          <option value="Sim, sempre disponível">✅ Sim, sempre disponível</option>
+          <option value="Às vezes">⚠️ Às vezes</option>
+          <option value="Não">❌ Não</option>
+        </select>
+      </div>
+
+      <div class="form-section-label">— Situações & Atitude —</div>
+
+      <div class="field">
+        <h3>⚔️ Como você reagiria a uma briga entre dois jogadores?</h3>
+        <textarea id="briga" placeholder="Descreva como você lidaria com a situação..."></textarea>
+      </div>
+
+      <div class="field">
+        <h3>🚨 O que você faria se um jogador estivesse usando hacks?</h3>
+        <textarea id="hacks" placeholder="Descreva sua atitude nessa situação..."></textarea>
+      </div>
+
+      <div class="field">
+        <h3>😤 Como você age quando alguém te desrespeita no servidor?</h3>
+        <textarea id="desrespeito" placeholder="Seja honesto na sua resposta!"></textarea>
+      </div>
+
+      <div class="form-section-label">— Motivação —</div>
+
+      <div class="field">
+        <h3>📋 Por que você quer ser Helper neste servidor?</h3>
+        <textarea id="motivacao" placeholder="Convença a gente! 😄"></textarea>
+      </div>
+
+      <div class="field">
+        <h3>🌟 O que te diferencia dos outros candidatos?</h3>
+        <textarea id="diferencial" placeholder="Fale sobre seus pontos fortes..."></textarea>
+      </div>
+
+      <button type="button" id="btnEnviar" onclick="enviarFormulario()">🚀 Enviar Formulário</button>
+    </main>
+
+    <footer>
+      <p>© 2026 Helpers Staff · Todos os direitos reservados</p>
+    </footer>
+
+  </div>
+
+  <script>
+    // Inicializa EmailJS com sua Public Key
+    emailjs.init("kVKxZSSCVOypH0F4C");
+
+    function mostrarToast(msg, tipo) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.className = "toast show " + tipo;
+      setTimeout(() => { toast.className = "toast"; }, 4000);
+    }
+
+    function enviarFormulario() {
+      const btn = document.getElementById("btnEnviar");
+
+      // Pega todos os valores
+      const dados = {
+        nome:          document.getElementById("nome").value.trim(),
+        idade:         document.getElementById("idade").value.trim(),
+        estado:        document.getElementById("estado").value.trim(),
+        discord:       document.getElementById("discord").value.trim(),
+        tempo_servidor:document.getElementById("tempo_servidor").value.trim(),
+        horas:         document.getElementById("horas").value.trim(),
+        experiencia:   document.getElementById("experiencia").value.trim(),
+        microfone:     document.getElementById("microfone").value.trim(),
+        briga:         document.getElementById("briga").value.trim(),
+        hacks:         document.getElementById("hacks").value.trim(),
+        desrespeito:   document.getElementById("desrespeito").value.trim(),
+        motivacao:     document.getElementById("motivacao").value.trim(),
+        diferencial:   document.getElementById("diferencial").value.trim(),
+      };
+
+      // Validação básica
+      if (!dados.nome || !dados.idade || !dados.discord) {
+        mostrarToast("❌ Preencha pelo menos nome, idade e Discord!", "erro");
+        return;
+      }
+
+      // Monta a mensagem completa
+      const mensagem = `
+👤 Nome: ${dados.nome}
+🎂 Idade: ${dados.idade}
+🌍 Estado: ${dados.estado}
+📱 Discord: ${dados.discord}
+
+🎮 Tempo no servidor: ${dados.tempo_servidor}
+⏰ Horas online por dia: ${dados.horas}
+💬 Experiência Staff: ${dados.experiencia}
+🎙️ Microfone: ${dados.microfone}
+
+⚔️ Reação a briga: ${dados.briga}
+🚨 Reação a hacks: ${dados.hacks}
+😤 Reação a desrespeito: ${dados.desrespeito}
+
+📋 Motivação: ${dados.motivacao}
+🌟 Diferencial: ${dados.diferencial}
+      `.trim();
+
+      // Estado de carregando
+      btn.textContent = "⏳ Enviando...";
+      btn.disabled = true;
+
+      emailjs.send("service_mb7i8b5", "template_odccn85", {
+        title: "Nova Candidatura - Helper",
+        name:  dados.nome,
+        message: mensagem,
+        email: "davi091448shelby@gmail.com"
+      })
+      .then(() => {
+        mostrarToast("✅ Formulário enviado com sucesso!", "sucesso");
+        btn.textContent = "✅ Enviado!";
+        btn.disabled = false;
+      })
+      .catch((err) => {
+        console.error(err);
+        mostrarToast("❌ Erro ao enviar. Tente novamente!", "erro");
+        btn.textContent = "🚀 Enviar Formulário";
+        btn.disabled = false;
+      });
+    }
+  </script>
+
 </body>
-
 </html>
-
