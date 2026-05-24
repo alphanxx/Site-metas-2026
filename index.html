@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Helpers · Recrutamento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg:#04060a; --bg2:#080d14; --bg3:#0c1520;
+  --accent:#e8b84b; --accent2:#ff6b35; --cyan:#00d4ff;
+  --borda:rgba(232,184,75,0.2); --text:#d8e8f0; --text-dim:#4a6a80;
+}
+html { scroll-behavior: smooth; }
+body { background:var(--bg); color:var(--text); font-family:'Exo 2',sans-serif; font-size:16px; min-height:100vh; cursor:none; overflow-x:hidden; }
+.cursor { position:fixed; width:10px; height:10px; background:var(--accent); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:width .2s,height .2s; mix-blend-mode:difference; }
+.cursor-trail { position:fixed; width:30px; height:30px; border:1px solid rgba(232,184,75,.5); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:left .12s ease,top .12s ease; }
+body:has(input:focus) .cursor, body:has(textarea:focus) .cursor, body:has(select:focus) .cursor { width:4px; height:20px; border-radius:2px; }
+#particles { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.scanlines { position:fixed; inset:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px); }
+.intro-screen { position:fixed; inset:0; z-index:1000; background:var(--bg); display:flex; align-items:center; justify-content:center; transition:opacity .8s ease,visibility .8s ease; }
+.intro-screen.hidden { opacity:0; visibility:hidden; }
+.intro-content { text-align:center; display:flex; flex-direction:column; align-items:center; gap:20px; }
+.intro-logo { font-family:'Bebas Neue',sans-serif; font-size:120px; line-height:1; color:var(--accent); text-shadow:0 0 60px rgba(232,184,75,.6),0 0 120px rgba(232,184,75,.3); animation:logoPulse 1s ease infinite alternate; }
+@keyframes logoPulse { from{text-shadow:0 0 40px rgba(232,184,75,.4)} to{text-shadow:0 0 80px rgba(232,184,75,.9),0 0 160px rgba(232,184,75,.4)} }
+.intro-text { font-size:13px; letter-spacing:4px; color:var(--text-dim); min-height:20px; }
+.intro-bar { width:260px; height:2px; background:rgba(255,255,255,.05); border-radius:2px; overflow:hidden; }
+.intro-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .05s linear; box-shadow:0 0 10px var(--accent); }
+.intro-percent { font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:3px; color:var(--accent); }
+.toast { position:fixed; bottom:32px; left:50%; transform:translateX(-50%) translateY(80px); padding:14px 30px; border-radius:3px; font-size:14px; font-weight:600; letter-spacing:1px; z-index:9000; opacity:0; transition:all .4s cubic-bezier(.34,1.56,.64,1); pointer-events:none; white-space:nowrap; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.sucesso { background:#0a1a0a; border:1px solid #00ff88; color:#00ff88; box-shadow:0 0 30px rgba(0,255,136,.3); }
+.toast.erro { background:#1a0a0a; border:1px solid #ff4466; color:#ff4466; box-shadow:0 0 30px rgba(255,68,102,.3); }
+.wrapper { position:relative; z-index:2; max-width:900px; margin:0 auto; padding:80px 28px 100px; opacity:0; transform:translateY(30px); transition:opacity 1s ease,transform 1s ease; }
+.wrapper.visible { opacity:1; transform:translateY(0); }
+.hero { text-align:center; margin-bottom:70px; }
+.hero-tag { display:inline-block; font-size:11px; letter-spacing:5px; color:var(--accent); border:1px solid var(--borda); padding:8px 20px; margin-bottom:32px; position:relative; animation:tagBlink 3s ease infinite,fadeSlideUp .6s .2s ease both; }
+@keyframes tagBlink { 0%,90%,100%{opacity:1} 95%{opacity:.3} }
+.hero-tag::before,.hero-tag::after { content:''; position:absolute; width:6px; height:6px; background:var(--accent); border-radius:50%; }
+.hero-tag::before { top:-3px; left:-3px; }
+.hero-tag::after { bottom:-3px; right:-3px; }
+.hero-title { font-family:'Bebas Neue',sans-serif; line-height:.9; margin-bottom:24px; animation:fadeSlideUp .6s .4s ease both; }
+.line1 { display:block; font-size:clamp(48px,10vw,90px); color:var(--text-dim); letter-spacing:12px; }
+.line2 { display:block; font-size:clamp(80px,20vw,160px); letter-spacing:8px; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hero-sub { color:var(--text-dim); font-size:15px; letter-spacing:1px; margin-bottom:50px; animation:fadeSlideUp .6s .6s ease both; }
+.req-grid { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
+.req-card { display:flex; align-items:center; gap:10px; background:var(--bg2); border:1px solid var(--borda); padding:12px 18px; border-radius:2px; font-size:14px; transition:border-color .3s,transform .3s,box-shadow .3s; opacity:0; transform:translateY(20px); }
+.req-card.visible { animation:cardIn .5s ease forwards; }
+@keyframes cardIn { to{opacity:1;transform:translateY(0)} }
+.req-card:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:0 8px 30px rgba(232,184,75,.1); }
+.req-icon { font-size:18px; }
+.req-text strong { color:var(--accent); }
+.progress-wrap { margin-bottom:60px; }
+.progress-label { display:flex; justify-content:space-between; font-size:11px; letter-spacing:3px; color:var(--text-dim); margin-bottom:8px; }
+#progressPct { color:var(--accent); font-weight:700; }
+.progress-track { height:2px; background:rgba(255,255,255,.05); border-radius:2px; overflow:hidden; }
+.progress-bar { height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px; box-shadow:0 0 12px var(--accent); transition:width .4s ease; }
+.section-header { display:flex; align-items:center; gap:16px; margin:60px 0 30px; }
+.section-num { font-family:'Bebas Neue',sans-serif; font-size:48px; color:var(--accent); opacity:.4; line-height:1; }
+.section-title { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:6px; color:var(--text); }
+.section-line { flex:1; height:1px; background:linear-gradient(90deg,var(--borda),transparent); }
+.fields-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.fields-col { display:flex; flex-direction:column; gap:20px; }
+.field-wrap { display:flex; flex-direction:column; gap:8px; }
+.field-wrap.full { grid-column:1/-1; }
+label { font-size:13px; font-weight:600; letter-spacing:1px; color:var(--text-dim); text-transform:uppercase; transition:color .3s; }
+.field-wrap:focus-within label { color:var(--accent); }
+.input-box { position:relative; }
+input[type="text"],input[type="number"],textarea { width:100%; background:var(--bg2); border:1px solid rgba(255,255,255,.07); border-radius:2px; color:var(--text); font-family:'Exo 2',sans-serif; font-size:15px; padding:14px 18px; outline:none; transition:border-color .3s,background .3s; position:relative; z-index:1; }
+input:focus,textarea:focus { border-color:var(--accent); background:var(--bg3); }
+input::placeholder,textarea::placeholder { color:rgba(255,255,255,.12); font-style:italic; }
+textarea { resize:vertical; min-height:120px; line-height:1.7; }
+.input-glow { position:absolute; inset:0; border-radius:2px; opacity:0; box-shadow:0 0 0 1px var(--accent),0 0 20px rgba(232,184,75,.15); transition:opacity .3s; pointer-events:none; z-index:0; }
+.input-box:focus-within .input-glow { opacity:1; }
+.select-box { position:relative; }
+select { width:100%; background:var(--bg2); border:1px solid rgba(255,255,255,.07); border-radius:2px; color:var(--text); font-family:'Exo 2',sans-serif; font-size:15px; padding:14px 44px 14px 18px; outline:none; appearance:none; -webkit-appearance:none; cursor:none; transition:border-color .3s; }
+select:focus { border-color:var(--accent); }
+select option { background:var(--bg2); color:var(--text); }
+.select-arrow { position:absolute; right:16px; top:50%; transform:translateY(-50%); color:var(--accent); pointer-events:none; font-size:16px; }
+.btn-wrap { margin-top:60px; display:flex; justify-content:center; }
+.btn-enviar { position:relative; display:flex; align-items:center; gap:16px; background:transparent; border:1px solid var(--accent); color:var(--accent); font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:6px; padding:20px 60px; cursor:none; overflow:hidden; transition:color .4s,background .4s,box-shadow .4s,transform .2s; }
+.btn-enviar:hover { background:var(--accent); color:#000; box-shadow:0 0 50px rgba(232,184,75,.4),0 0 100px rgba(232,184,75,.2); transform:translateY(-2px); }
+.btn-enviar:active { transform:translateY(0); }
+.btn-shine { position:absolute; top:0; left:-100%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent); transform:skewX(-20deg); transition:left .5s ease; }
+.btn-enviar:hover .btn-shine { left:160%; }
+.btn-enviar:disabled { opacity:.5; transform:none; }
+.site-footer { margin-top:80px; text-align:center; }
+.footer-line { width:100%; height:1px; background:linear-gradient(90deg,transparent,var(--borda),transparent); margin-bottom:24px; }
+.site-footer p { font-size:13px; color:var(--text-dim); letter-spacing:2px; }
+.site-footer strong { color:var(--accent); }
+@keyframes fadeSlideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+@keyframes rippleAnim { to{transform:scale(30);opacity:0} }
+@media(max-width:640px) {
+  .wrapper{padding:50px 16px 80px} .fields-grid{grid-template-columns:1fr} .field-wrap.full{grid-column:1} .btn-enviar{padding:18px 40px;font-size:17px} .line2{font-size:80px} body{cursor:auto} .cursor,.cursor-trail{display:none}
+}
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+<canvas id="particles"></canvas>
+<div class="scanlines"></div>
+<div class="toast" id="toast"></div>
+
+<div class="intro-screen" id="introScreen">
+  <div class="intro-content">
+    <div class="intro-logo">H</div>
+    <div class="intro-text" id="introText"></div>
+    <div class="intro-bar"><div class="intro-fill" id="introFill"></div></div>
+    <div class="intro-percent" id="introPercent">0%</div>
+  </div>
+</div>
+
+<div class="wrapper" id="mainWrapper">
+  <header class="hero">
+    <div class="hero-tag">⬡ RECRUTAMENTO ABERTO ⬡</div>
+    <h1 class="hero-title">
+      <span class="line1">SEJA UM</span>
+      <span class="line2">HELPER</span>
+    </h1>
+    <p class="hero-sub">Prove que você tem o que precisa. Preencha o formulário abaixo.</p>
+    <div class="req-grid">
+      <div class="req-card"><div class="req-icon">⏱</div><div class="req-text">Mínimo <strong>15 anos</strong></div></div>
+      <div class="req-card"><div class="req-icon">🎯</div><div class="req-text"><strong>Responsabilidade</strong> acima de tudo</div></div>
+      <div class="req-card"><div class="req-icon">💬</div><div class="req-text">Experiência no <strong>Discord</strong></div></div>
+      <div class="req-card"><div class="req-icon">🎙</div><div class="req-text"><strong>Microfone</strong> disponível</div></div>
+      <div class="req-card"><div class="req-icon">🗓</div><div class="req-text">Mínimo <strong>3 meses</strong> de jogo</div></div>
+    </div>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span>PROGRESSO</span><span id="progressPct">0%</span></div>
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+  </div>
+
+  <main class="form-main">
+    <div class="section-header"><span class="section-num">01</span><span class="section-title">IDENTIFICAÇÃO</span><div class="section-line"></div></div>
+    <div class="fields-grid">
+      <div class="field-wrap"><label>👤 Nome completo</label><div class="input-box"><input id="nome" type="text" placeholder="Como você se chama?"><div class="input-glow"></div></div></div>
+      <div class="field-wrap"><label>🎂 Idade</label><div class="input-box"><input id="idade" type="number" placeholder="Quantos anos você tem?"><div class="input-glow"></div></div></div>
+      <div class="field-wrap"><label>🌍 Estado / País</label><div class="input-box"><input id="estado" type="text" placeholder="Ex: Brasil - São Paulo"><div class="input-glow"></div></div></div>
+      <div class="field-wrap"><label>📱 Discord</label><div class="input-box"><input id="discord" type="text" placeholder="Ex: jogador#1234"><div class="input-glow"></div></div></div>
+    </div>
+
+    <div class="section-header"><span class="section-num">02</span><span class="section-title">EXPERIÊNCIA</span><div class="section-line"></div></div>
+    <div class="fields-grid">
+      <div class="field-wrap"><label>🎮 Tempo no servidor</label><div class="input-box"><input id="tempo_servidor" type="text" placeholder="Ex: 4 meses, 1 ano..."><div class="input-glow"></div></div></div>
+      <div class="field-wrap"><label>⏰ Horas online por dia</label><div class="input-box"><input id="horas" type="text" placeholder="Ex: 3 horas por dia"><div class="input-glow"></div></div></div>
+      <div class="field-wrap full"><label>💼 Experiência como Staff/Helper</label><div class="input-box"><input id="experiencia" type="text" placeholder="Já foi Staff em outro servidor?"><div class="input-glow"></div></div></div>
+      <div class="field-wrap full"><label>🎙 Microfone disponível?</label><div class="select-box"><select id="microfone"><option value="">Selecione...</option><option value="Sim, sempre disponível">✅ Sim, sempre disponível</option><option value="Às vezes">⚠️ Às vezes</option><option value="Não">❌ Não</option></select><div class="select-arrow">▾</div></div></div>
+    </div>
+
+    <div class="section-header"><span class="section-num">03</span><span class="section-title">SITUAÇÕES</span><div class="section-line"></div></div>
+    <div class="fields-col">
+      <div class="field-wrap full"><label>⚔️ Como reagiria a uma briga entre dois jogadores?</label><div class="input-box"><textarea id="briga" placeholder="Descreva como você lidaria com a situação..."></textarea><div class="input-glow"></div></div></div>
+      <div class="field-wrap full"><label>🚨 O que faria se um jogador estivesse usando hacks?</label><div class="input-box"><textarea id="hacks" placeholder="Descreva sua atitude nessa situação..."></textarea><div class="input-glow"></div></div></div>
+      <div class="field-wrap full"><label>😤 Como age quando alguém te desrespeita?</label><div class="input-box"><textarea id="desrespeito" placeholder="Seja honesto na sua resposta!"></textarea><div class="input-glow"></div></div></div>
+    </div>
+
+    <div class="section-header"><span class="section-num">04</span><span class="section-title">MOTIVAÇÃO</span><div class="section-line"></div></div>
+    <div class="fields-col">
+      <div class="field-wrap full"><label>📋 Por que você quer ser Helper neste servidor?</label><div class="input-box"><textarea id="motivacao" placeholder="Convença a gente! 😄"></textarea><div class="input-glow"></div></div></div>
+      <div class="field-wrap full"><label>🌟 O que te diferencia dos outros candidatos?</label><div class="input-box"><textarea id="diferencial" placeholder="Fale sobre seus pontos fortes..."></textarea><div class="input-glow"></div></div></div>
+    </div>
+
+    <div class="btn-wrap">
+      <button class="btn-enviar" id="btnEnviar" onclick="enviarFormulario()">
+        <span class="btn-text">ENVIAR CANDIDATURA</span>
+        <span class="btn-icon">→</span>
+        <div class="btn-shine"></div>
+      </button>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-line"></div>
+    <p>© 2026 <strong>Helpers Staff</strong> · Todos os direitos reservados</p>
+  </footer>
+</div>
+
+<script>
+emailjs.init("kVKxZSSCVOypH0F4C");
+
+// CURSOR
+const cursor = document.getElementById("cursor");
+const cursorTrail = document.getElementById("cursorTrail");
+let mouseX = 0, mouseY = 0;
+document.addEventListener("mousemove", (e) => {
+  mouseX = e.clientX; mouseY = e.clientY;
+  cursor.style.left = mouseX + "px"; cursor.style.top = mouseY + "px";
+  setTimeout(() => { cursorTrail.style.left = mouseX + "px"; cursorTrail.style.top = mouseY + "px"; }, 80);
+});
+document.addEventListener("mousedown", () => { cursor.style.transform = "translate(-50%,-50%) scale(0.6)"; });
+document.addEventListener("mouseup",   () => { cursor.style.transform = "translate(-50%,-50%) scale(1)"; });
+
+// PARTÍCULAS
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+window.addEventListener("resize", () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+const parts = [];
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height;
+    this.size = Math.random()*1.5+0.3; this.speedX = (Math.random()-.5)*.4; this.speedY = (Math.random()-.5)*.4;
+    this.alpha = Math.random()*.5+.1;
+    this.color = Math.random()>.6 ? `rgba(232,184,75,${this.alpha})` : `rgba(0,212,255,${this.alpha*.5})`;
+  }
+  update() { this.x+=this.speedX; this.y+=this.speedY; if(this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height) this.reset(); }
+  draw() { ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fillStyle=this.color; ctx.fill(); }
+}
+for(let i=0;i<60;i++) parts.push(new Particle());
+function drawLines() {
+  for(let i=0;i<parts.length;i++) for(let j=i+1;j<parts.length;j++) {
+    const dx=parts[i].x-parts[j].x, dy=parts[i].y-parts[j].y, dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<100){ ctx.beginPath(); ctx.moveTo(parts[i].x,parts[i].y); ctx.lineTo(parts[j].x,parts[j].y); ctx.strokeStyle=`rgba(232,184,75,${.06*(1-dist/100)})`; ctx.lineWidth=.5; ctx.stroke(); }
+  }
+}
+(function animate(){ ctx.clearRect(0,0,canvas.width,canvas.height); parts.forEach(p=>{p.update();p.draw();}); drawLines(); requestAnimationFrame(animate); })();
+
+// INTRO
+const introScreen=document.getElementById("introScreen"), introText=document.getElementById("introText");
+const introFill=document.getElementById("introFill"), introPercent=document.getElementById("introPercent");
+const mainWrapper=document.getElementById("mainWrapper");
+const phrases=["INICIALIZANDO SISTEMA...","VERIFICANDO CREDENCIAIS...","CARREGANDO FORMULÁRIO...","PRONTO."];
+let ph=0,pc=0,ty=0;
+function typePhrase(){ if(ph>=phrases.length) return; const cur=phrases[ph]; if(ty<=cur.length){ introText.textContent=cur.substring(0,ty++); setTimeout(typePhrase,40); } else { setTimeout(()=>{ ph++; ty=0; typePhrase(); },300); } }
+function fillBar(){ introFill.style.width=pc+"%"; introPercent.textContent=Math.floor(pc)+"%"; pc+=Math.random()*4+1; if(pc<100) setTimeout(fillBar,30); else { introFill.style.width="100%"; introPercent.textContent="100%"; setTimeout(()=>{ introScreen.classList.add("hidden"); mainWrapper.classList.add("visible"); document.querySelectorAll(".req-card").forEach((c,i)=>setTimeout(()=>c.classList.add("visible"),i*100+400)); },600); } }
+typePhrase(); fillBar();
+
+// PROGRESSO
+const allInputs=document.querySelectorAll("input,textarea,select");
+const progressBar=document.getElementById("progressBar"), progressPct=document.getElementById("progressPct");
+function updateProgress(){ let f=0; allInputs.forEach(i=>{ if(i.value.trim()!=="") f++; }); const p=Math.round(f/allInputs.length*100); progressBar.style.width=p+"%"; progressPct.textContent=p+"%"; }
+allInputs.forEach(i=>{ i.addEventListener("input",updateProgress); i.addEventListener("change",updateProgress); });
+
+// GLITCH
+const line2=document.querySelector(".line2");
+let glitchInt;
+function startGlitch(){ const orig="HELPER", chars="▓░▒█▄▀■□◆◇"; let it=0; clearInterval(glitchInt); glitchInt=setInterval(()=>{ line2.textContent=orig.split("").map((c,i)=>i<it?orig[i]:chars[Math.floor(Math.random()*chars.length)]).join(""); it+=.5; if(it>=orig.length){ clearInterval(glitchInt); line2.textContent=orig; } },40); }
+setInterval(startGlitch,5000); setTimeout(startGlitch,2000);
+
+// SCROLL REVEAL
+const observer=new IntersectionObserver((entries)=>{ entries.forEach(e=>{ if(e.isIntersecting){ e.target.style.animation="fadeSlideUp .6s ease forwards"; observer.unobserve(e.target); } }); },{threshold:.1});
+document.querySelectorAll(".section-header,.field-wrap").forEach(el=>{ el.style.opacity="0"; observer.observe(el); });
+
+// TOAST
+function mostrarToast(msg,tipo){ const t=document.getElementById("toast"); t.textContent=msg; t.className="toast show "+tipo; setTimeout(()=>{ t.className="toast"; },4000); }
+
+// RIPPLE
+document.querySelector(".btn-enviar").addEventListener("click",function(e){ const r=document.createElement("span"); r.style.cssText=`position:absolute;width:10px;height:10px;background:rgba(255,255,255,.3);border-radius:50%;transform:scale(0);animation:rippleAnim .6s ease forwards;left:${e.offsetX-5}px;top:${e.offsetY-5}px;pointer-events:none;`; this.appendChild(r); setTimeout(()=>r.remove(),600); });
+
+// ENVIO
+function enviarFormulario(){
+  const btn=document.getElementById("btnEnviar");
+  const dados={
+    nome:document.getElementById("nome").value.trim(),
+    idade:document.getElementById("idade").value.trim(),
+    estado:document.getElementById("estado").value.trim(),
+    discord:document.getElementById("discord").value.trim(),
+    tempo_servidor:document.getElementById("tempo_servidor").value.trim(),
+    horas:document.getElementById("horas").value.trim(),
+    experiencia:document.getElementById("experiencia").value.trim(),
+    microfone:document.getElementById("microfone").value.trim(),
+    briga:document.getElementById("briga").value.trim(),
+    hacks:document.getElementById("hacks").value.trim(),
+    desrespeito:document.getElementById("desrespeito").value.trim(),
+    motivacao:document.getElementById("motivacao").value.trim(),
+    diferencial:document.getElementById("diferencial").value.trim(),
+  };
+  if(!dados.nome||!dados.idade||!dados.discord){ mostrarToast("❌ Preencha pelo menos nome, idade e Discord!","erro"); btn.style.animation="shake .4s ease"; setTimeout(()=>btn.style.animation="",400); return; }
+  const mensagem=`👤 Nome: ${dados.nome}\n🎂 Idade: ${dados.idade}\n🌍 Estado: ${dados.estado}\n📱 Discord: ${dados.discord}\n\n🎮 Tempo no servidor: ${dados.tempo_servidor}\n⏰ Horas online/dia: ${dados.horas}\n💼 Experiência Staff: ${dados.experiencia}\n🎙 Microfone: ${dados.microfone}\n\n⚔️ Reação a briga: ${dados.briga}\n🚨 Reação a hacks: ${dados.hacks}\n😤 Reação a desrespeito: ${dados.desrespeito}\n\n📋 Motivação: ${dados.motivacao}\n🌟 Diferencial: ${dados.diferencial}`;
+  btn.querySelector(".btn-text").textContent="ENVIANDO..."; btn.disabled=true;
+  emailjs.send("service_mb7i8b5","template_odccn85",{title:"🚀 Nova Candidatura - Helper",name:dados.nome,message:mensagem,email:"davi091448shelby@gmail.com"})
+  .then(()=>{ mostrarToast("✅ Candidatura enviada com sucesso!","sucesso"); btn.querySelector(".btn-text").textContent="ENVIADO ✓"; btn.style.borderColor="#00ff88"; btn.style.color="#00ff88"; })
+  .catch((err)=>{ console.error(err); mostrarToast("❌ Erro ao enviar. Tente novamente!","erro"); btn.querySelector(".btn-text").textContent="ENVIAR CANDIDATURA"; btn.disabled=false; });
+}
+</script>
+</body>
+</html>
